@@ -1,17 +1,41 @@
 import axios from 'axios'
 
 export async function generateImage(prompt: string): Promise<string> {
+  // In development, fall back to direct API calls (will have CORS issues)
+  // In production, use the Vercel serverless function
+  const isProduction = import.meta.env.PROD
+
+  if (isProduction) {
+    // Production: Use Vercel serverless function
+    try {
+      console.log('Production: Using Vercel serverless function')
+      const response = await axios.post('/api/replicate', {
+        prompt: prompt
+      })
+      console.log('Image generated successfully:', response.data.image)
+      return response.data.image
+    } catch (error: any) {
+      console.error('Serverless function failed:', error)
+      return getFallbackImage(prompt)
+    }
+  } else {
+    // Development: Direct Replicate API call (may have CORS issues)
+    console.log('Development: Using direct Replicate API call')
+    return generateImageDirect(prompt)
+  }
+}
+
+async function generateImageDirect(prompt: string): Promise<string> {
   const token = import.meta.env.VITE_REPLICATE_API_TOKEN
   const model = import.meta.env.VITE_REPLICATE_MODEL || 'black-forest-labs/flux-1.1-pro'
 
   if (!token) {
     console.error('No Replicate API token found')
-    return ''
+    return getFallbackImage(prompt)
   }
 
   try {
-    console.log('Starting image generation for prompt:', prompt)
-    console.log('Using model:', model)
+    console.log('Starting direct image generation for prompt:', prompt)
 
     const start = await axios.post(
       'https://api.replicate.com/v1/predictions',
@@ -37,7 +61,7 @@ export async function generateImage(prompt: string): Promise<string> {
 
     if (!id) {
       console.error('No prediction ID received')
-      return ''
+      return getFallbackImage(prompt)
     }
 
     let status = start.data.status
@@ -49,7 +73,7 @@ export async function generateImage(prompt: string): Promise<string> {
       await new Promise(r => setTimeout(r, 2000))
 
       try {
-        const poll = await axios.get(`/api/replicate/v1/predictions/${id}`, {
+        const poll = await axios.get(`https://api.replicate.com/v1/predictions/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
 
@@ -60,12 +84,12 @@ export async function generateImage(prompt: string): Promise<string> {
 
         if (status === 'failed') {
           console.error('Prediction failed:', poll.data.error)
-          return ''
+          return getFallbackImage(prompt)
         }
 
       } catch (pollError) {
         console.error('Error polling prediction:', pollError)
-        return ''
+        return getFallbackImage(prompt)
       }
     }
 
@@ -79,19 +103,19 @@ export async function generateImage(prompt: string): Promise<string> {
     }
 
     console.error('No valid output received')
-    return ''
+    return getFallbackImage(prompt)
 
   } catch (error: any) {
-    console.error('Image generation failed:', error)
-    console.error('Error response:', error.response?.data)
-    console.error('Error status:', error.response?.status)
-    console.error('Error message:', error.message)
-
-    // Fallback: return a fitness-themed placeholder image URL
-    console.log('Returning placeholder image due to API failure')
-    let placeholderText = 'Fitness Image'
-    let bgColor = '6366f1' // Default blue
-
-    return `https://dummyimage.com/400x300/${bgColor}/ffffff?text=${encodeURIComponent(prompt)}`
+    console.error('Direct API call failed:', error)
+    console.error('This is expected in development due to CORS. Use production deployment for full functionality.')
+    return getFallbackImage(prompt)
   }
+}
+
+function getFallbackImage(prompt: string): string {
+  console.log('Returning placeholder image due to API failure')
+  let placeholderText = 'Fitness Image'
+  let bgColor = '6366f1' // Default blue
+
+  return `https://dummyimage.com/400x300/${bgColor}/ffffff?text=${encodeURIComponent(prompt)}`
 }
