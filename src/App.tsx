@@ -167,9 +167,9 @@ export default function App() {
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-8 text-center h-full flex items-center"
+                className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-8 text-center  flex items-center"
               >
-                <div className="max-w-md mx-auto h-full">
+                <div className="max-w-md mx-auto h-[460px]">
                   <div className="text-6xl mb-4">💪</div>
                   <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                     Ready to Start Your Fitness Journey?
