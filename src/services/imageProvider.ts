@@ -14,7 +14,7 @@ export async function generateImage(prompt: string): Promise<string> {
     console.log('Using model:', model)
 
     const start = await axios.post(
-      '/api/replicate/v1/predictions',
+      'https://api.replicate.com/v1/predictions',
       {
         version: model,
         input: {
