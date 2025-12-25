@@ -3,9 +3,9 @@ import axios from 'axios'
 export async function generateImage(prompt: string): Promise<string> {
   // In development, fall back to direct API calls (will have CORS issues)
   // In production, use the Vercel serverless function
-  const isProduction = import.meta.env.PROD
+  // const isProduction = import.meta.env.PROD
 
-  if (isProduction) {
+  // if (isProduction) {
     // Production: Use Vercel serverless function
     try {
       console.log('Production: Using Vercel serverless function')
@@ -18,11 +18,11 @@ export async function generateImage(prompt: string): Promise<string> {
       console.error('Serverless function failed:', error)
       return getFallbackImage(prompt)
     }
-  } else {
-    // Development: Direct Replicate API call (may have CORS issues)
-    console.log('Development: Using direct Replicate API call')
-    return generateImageDirect(prompt)
-  }
+  // } else {
+  //   // Development: Direct Replicate API call (may have CORS issues)
+  //   console.log('Development: Using direct Replicate API call')
+  //   return generateImageDirect(prompt)
+  // }
 }
 
 async function generateImageDirect(prompt: string): Promise<string> {
